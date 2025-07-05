@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaved Ice Fun Filter!</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the filter */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 400px; /* Max width for a phone-like view */
+            height: 700px; /* Fixed height for a phone-like view */
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #333; /* Fallback background */
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures video covers the container */
+            transform: scaleX(-1); /* Mirror effect for front camera */
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror effect for front camera */
+        }
+        .filter-overlay-svg {
+            position: absolute;
+            top: 0; /* Align to top */
+            left: 0; /* Align to left */
+            width: 100%; /* Take full width of camera container */
+            height: 100%; /* Take full height of camera container */
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Allows clicks to pass through */
+            z-index: 10; /* Ensure it's above the camera */
+        }
+        .filter-overlay-svg.active {
+            opacity: 1; /* Visible when active */
+        }
+        .message-box {
+            position: absolute;
+            bottom: 80px; /* Above the buttons */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            display: none; /* Hidden by default */
+            z-index: 20;
+            flex-direction: column; /* Allow content to stack */
+            align-items: center;
+            gap: 5px;
+        }
+        .message-box.show {
+            display: flex; /* Use flex to center content */
+        }
+        .action-buttons {
+            position: absolute;
+            bottom: 10px;
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            justify-content: center;
+            gap: 10px;
+            padding-bottom: 10px; /* Added padding to move buttons up slightly */
+            z-index: 30;
+        }
+        .action-button {
+            padding: 12px 24px;
+            background-color: #FF69B4; /* Fun shaved ice color */
+            color: white;
+            border-radius: 9999px; /* Fully rounded */
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+        .action-button:hover {
+            background-color: #FF1493; /* Darker pink on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.6);
+        }
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 105, 180, 0.3);
+        }
+        .copy-button {
+            background-color: #4CAF50; /* Green for copy */
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .copy-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="container relative flex flex-col items-center justify-center">
+        <div class="camera-container">
+            <video id="videoFeed" autoplay playsinline></video>
+            <canvas id="cameraCanvas"></canvas>
+            <!-- SVG for Shaved Ice Filter Overlay -->
+            <!-- viewBox will be set dynamically by JavaScript to match video aspect ratio -->
+            <svg id="shavedIceFilter" class="filter-overlay-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#FF0000"/> <!-- Red -->
+                        <stop offset="16.6%" stop-color="#FF7F00"/> <!-- Orange -->
+                        <stop offset="33.2%" stop-color="#FFFF00"/> <!-- Yellow -->
+                        <stop offset="49.8%" stop-color="#00FF00"/> <!-- Green -->
+                        <stop offset="66.4%" stop-color="#0000FF"/> <!-- Blue -->
+                        <stop offset="83%" stop-color="#4B0082"/> <!-- Indigo -->
+                        <stop offset="100%" stop-color="#8B00FF"/> <!-- Violet -->
+                    </linearGradient>
+                </defs>
+                <!-- Ice Cone Shape - COMMENTED OUT as per request -->
+                <!-- <path d="M100 10 C150 10 180 60 180 120 C180 180 100 240 100 240 C100 240 20 180 20 120 C20 60 50 10 100 10 Z" fill="url(#rainbowGradient)" stroke="#fff" stroke-width="5"/> -->
+                <!-- Cherry on top - COMMENTED OUT as it was part of the cone -->
+                <!-- <circle cx="150" cy="30" r="15" fill="#DC143C" stroke="#fff" stroke-width="3"/> -->
+
+                <!-- Ice Barn Logo - Positioned and sized relative to dynamic viewBox -->
+                <!-- x, y, width, height will be set dynamically in JS based on video dimensions -->
+                <image id="logoImage" href="Ice-Barn-2021-Logo-Transparent-1.webp" x="0" y="0" width="0" height="0" preserveAspectRatio="xMidYMid meet"/>
+                
+                <!-- Text Overlay - Positioned and sized relative to dynamic viewBox -->
+                <!-- x, y, font-size, stroke-width will be set dynamically in JS based on video dimensions -->
+                <text id="filterText" x="0" y="0" font-family="Arial, sans-serif" fill="#FF69B4" text-anchor="middle" font-weight="bold" stroke="#000" stroke-width="0">
+                    Welcome to the Ice Barn Brownsburg, IN!
+                </text>
+            </svg>
+        </div>
+
+        <!-- Message Box for status/errors and caption display -->
+        <div id="messageBox" class="message-box"></div>
+
+        <div class="action-buttons">
+            <button id="checkLocationBtn" class="action-button">
+                Check In
+            </button>
+            <button id="captureBtn" class="action-button" style="display: none;">
+                Capture Photo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        let videoFeed = document.getElementById('videoFeed');
+        let cameraCanvas = document.getElementById('cameraCanvas');
+        let context = cameraCanvas.getContext('2d');
+        let shavedIceFilter = document.getElementById('shavedIceFilter');
+        let logoImage = document.getElementById('logoImage'); // Get reference to logo image
+        let filterText = document.getElementById('filterText'); // Added for dynamic text
+        let messageBox = document.getElementById('messageBox');
+        let checkLocationBtn = document.getElementById('checkLocationBtn');
+        let captureBtn = document.getElementById('captureBtn');
+
+        let stream = null; // To hold the camera stream
+
+        // Define your two business locations (example coordinates for two different places)
+        // You would replace these with the actual coordinates of your two shaved ice locations.
+        const businessLocations = [
+            { name: "Main Street Shaved Ice", latitude: 39.8329, longitude: -86.3687 }, // Example: Main St. Location
+            { name: "Test Location Shaved Ice", latitude: 39.8456, longitude: -86.4226 }  // Example: Test Location
+        ];
+        const detectionRadiusKm = 0.5; // Radius in kilometers (e.g., 500 meters)
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {boolean} isError - True if it's an error message, false otherwise.
+         * @param {boolean} allowCopy - True if a copy button should be shown.
+         */
+        function showMessage(message, isError = false, allowCopy = false) {
+            messageBox.innerHTML = ''; // Clear previous content
+            const textNode = document.createElement('span');
+            textNode.textContent = message;
+            messageBox.appendChild(textNode);
+
+            if (allowCopy && message) {
+                const copyButton = document.createElement('button');
+                copyButton.textContent = 'Copy';
+                copyButton.className = 'copy-button';
+                copyButton.onclick = () => {
+                    // Use document.execCommand('copy') for clipboard access in iframes
+                    const textArea = document.createElement('textarea');
+                    textArea.value = message;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showMessage("Copied to clipboard!", false);
+                    } catch (err) {
+                        showMessage("Failed to copy.", true);
+                    }
+                    document.body.removeChild(textArea);
+                };
+                messageBox.appendChild(copyButton);
+            }
+
+            messageBox.className = `message-box show ${isError ? 'bg-red-500 text-white' : 'bg-white text-gray-800'}`;
+            // Hide message after a few seconds, unless it's a caption or flavor to be copied
+            if (!allowCopy) {
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        /**
+         * Calculates the distance between two sets of coordinates using the Haversine formula.
+         * @param {number} lat1 - Latitude of point 1.
+         * @param {number} lon1 - Longitude of point 1.
+         * @param {number} lat2 - Latitude of point 2.
+         * @param {number} lon2 - Longitude of point 2.
+         * @returns {number} Distance in kilometers.
+         */
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c; // Distance in km
+            return distance;
+        }
+
+        /**
+         * Initializes the camera feed.
+         */
+        async function initCamera() {
+            try {
+                // Request access to the user's camera
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); // 'user' for front camera
+                videoFeed.srcObject = stream;
+                videoFeed.onloadedmetadata = () => {
+                    videoFeed.play();
+                    // Set canvas dimensions to match video feed
+                    cameraCanvas.width = videoFeed.videoWidth;
+                    cameraCanvas.height = videoFeed.videoHeight;
+                    drawCameraFeed(); // Start drawing on canvas
+                };
+                showMessage("Camera access granted. Ready to check in!");
+            } catch (err) {
+                showMessage(`Error accessing camera: ${err.name} - ${err.message}. Please allow camera access.`, true);
+            }
+        }
+
+        /**
+         * Continuously draws the video feed onto the canvas.
+         */
+        async function drawCameraFeed() { // Made async to await image loading
+            if (videoFeed.paused || videoFeed.ended) {
+                return;
+            }
+            // Clear canvas and draw video frame
+            context.clearRect(0, 0, cameraCanvas.width, cameraCanvas.height);
+            context.drawImage(videoFeed, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+            // Dynamically adjust SVG viewBox to match video feed aspect ratio
+            shavedIceFilter.setAttribute('viewBox', `0 0 ${videoFeed.videoWidth} ${videoFeed.videoHeight}`);
+
+            // Position and size logo and text dynamically within the new viewBox
+            // Logo: Top right, with padding
+            const logoWidth = videoFeed.videoWidth * 0.20; // 20% of video width
+            const logoHeight = logoWidth * (125 / 300); // Maintain logo aspect ratio (from original 300x125)
+            const logoPaddingX = videoFeed.videoWidth * 0.03; // 3% padding from right
+            const logoPaddingY = videoFeed.videoHeight * 0.03; // 3% padding from top
+            logoImage.setAttribute('x', videoFeed.videoWidth - logoWidth - logoPaddingX);
+            logoImage.setAttribute('y', logoPaddingY);
+            logoImage.setAttribute('width', logoWidth);
+            logoImage.setAttribute('height', logoHeight);
+
+            // Text: Bottom center, with padding - Moved higher
+            const textFontSize = videoFeed.videoHeight * 0.06; // 6% of video height
+            const textPaddingY = videoFeed.videoHeight * 0.15; // Increased padding to move text higher
+            filterText.setAttribute('x', videoFeed.videoWidth / 2);
+            filterText.setAttribute('y', videoFeed.videoHeight - textPaddingY);
+            filterText.setAttribute('font-size', textFontSize);
+            filterText.setAttribute('stroke-width', textFontSize * 0.03); // Stroke relative to font size
+
+
+            // Draw SVG filter if active
+            if (shavedIceFilter.classList.contains('active')) {
+                const svgString = new XMLSerializer().serializeToString(shavedIceFilter);
+                const img = new Image();
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+
+                // Wait for the image to load before drawing it
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        context.drawImage(img, 0, 0, cameraCanvas.width, cameraCanvas.height);
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    };
+                    img.src = url;
+                });
+            }
+
+            requestAnimationFrame(drawCameraFeed); // Continue drawing
+        }
+
+        /**
+         * Handles successful retrieval of geolocation.
+         * @param {GeolocationPosition} position - The geolocation position object.
+         */
+        function handleSuccess(position) {
+            const userLatitude = position.coords.latitude;
+            const userLongitude = position.coords.longitude;
+
+            let atLocation = false;
+            let detectedLocationName = "";
+
+            // Check distance to each business location
+            for (const loc of businessLocations) {
+                const distance = calculateDistance(userLatitude, userLongitude, loc.latitude, loc.longitude);
+                showMessage(`Your location: Lat ${userLatitude.toFixed(4)}, Lon ${userLongitude.toFixed(4)}. Distance to ${loc.name}: ${distance.toFixed(2)} km.`);
+
+                if (distance <= detectionRadiusKm) {
+                    atLocation = true;
+                    detectedLocationName = loc.name;
+                    break; // Found a matching location, no need to check others
+                }
+            }
+
+            if (atLocation) {
+                shavedIceFilter.classList.add('active'); // Show the filter
+                captureBtn.style.display = 'block'; // Show capture button
+                // Update filter text with detected location name
+                filterText.textContent = `Welcome to the Ice Barn Brownsburg, IN!`; // Fixed text content
+                // Text color is now set in CSS for fill property of the text element
+                showMessage(`Welcome to the Ice Barn Brownsburg, IN! Filter activated. Take a fun photo!`, false);
+            } else {
+                shavedIceFilter.classList.remove('active'); // Hide the filter
+                captureBtn.style.display = 'none'; // Hide capture button
+                filterText.textContent = `Shaved Ice Fun!`; // Reset filter text
+                showMessage("You are not at a Shaved Ice location. Filter not active.", false);
+            }
+        }
+
+        /**
+         * Handles errors during geolocation retrieval.
+         * @param {GeolocationPositionError} error - The geolocation error object.
+         */
+        function handleError(error) {
+            let errorMessage = "Error getting location: ";
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += "User denied the request for Geolocation. Please allow location access.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    errorMessage += "An unknown error occurred.";
+                    break;
+            }
+            showMessage(errorMessage, true); // Show error message
+            shavedIceFilter.classList.remove('active'); // Ensure filter is hidden on error
+            captureBtn.style.display = 'none'; // Hide capture button on error
+        }
+
+        /**
+         * Initiates the geolocation check.
+         */
+        function checkLocation() {
+            if (navigator.geolocation) {
+                showMessage("Checking your location...");
+                navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000, // 10 seconds
+                    maximumAge: 0 // No cached position
+                });
+            } else {
+                showMessage("Geolocation is not supported by your browser.", true);
+            }
+        }
+
+        /**
+         * Captures the photo from the canvas and allows download.
+         */
+        async function capturePhoto() { // Made async to await image loading
+            if (!stream) {
+                showMessage("Camera not active. Please allow camera access first.", true);
+                return;
+            }
+
+            // Create a temporary canvas to draw the final image (without mirroring)
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = videoFeed.videoWidth;
+            finalCanvas.height = videoFeed.videoHeight;
+            const finalContext = finalCanvas.getContext('2d');
+
+            // Draw the video frame (un-mirrored)
+            finalContext.drawImage(videoFeed, 0, 0, finalCanvas.width, finalCanvas.height);
+
+            // Draw the SVG filter if active
+            if (shavedIceFilter.classList.contains('active')) {
+                const svgString = new XMLSerializer().serializeToString(shavedIceFilter);
+                const img = new Image();
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+
+                // Wait for the SVG image to load onto the temporary canvas
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        finalContext.drawImage(img, 0, 0, finalCanvas.width, finalCanvas.height);
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    };
+                    img.src = url;
+                });
+            }
+
+            // Get image data and create a download link (now guaranteed to have SVG content if active)
+            const imageDataURL = finalCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imageDataURL;
+            link.download = 'shaved_ice_fun.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showMessage("Photo captured! Check your downloads.", false);
+        }
+
+        // Event Listeners
+        checkLocationBtn.addEventListener('click', checkLocation);
+        captureBtn.addEventListener('click', capturePhoto);
+
+        // Initialize camera on page load
+        window.onload = initCamera;
+
+        // Handle window resize to adjust canvas dimensions
+        window.addEventListener('resize', () => {
+            if (videoFeed.videoWidth && videoFeed.videoHeight) {
+                cameraCanvas.width = videoFeed.videoWidth;
+                cameraCanvas.height = videoFeed.videoHeight;
+            }
+        });
+    </script>
+</body>
+</html>
