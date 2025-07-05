@@ -311,22 +311,22 @@
 
             // Position and size logo and text dynamically within the new viewBox
             // Logo: Top right, with padding
-            const logoWidth = videoFeed.videoWidth * 0.20; // 20% of video width
+            const logoWidth = videoFeed.videoWidth * 0.30; // Increased to 30% of video width
             const logoHeight = logoWidth * (125 / 300); // Maintain logo aspect ratio (from original 300x125)
-            const logoPaddingX = videoFeed.videoWidth * 0.03; // 3% padding from right
-            const logoPaddingY = videoFeed.videoHeight * 0.03; // 3% padding from top
+            const logoPaddingX = videoFeed.videoWidth * 0.05; // 5% padding from right
+            const logoPaddingY = videoFeed.videoHeight * 0.05; // 5% padding from top
             logoImage.setAttribute('x', videoFeed.videoWidth - logoWidth - logoPaddingX);
             logoImage.setAttribute('y', logoPaddingY);
             logoImage.setAttribute('width', logoWidth);
             logoImage.setAttribute('height', logoHeight);
 
-            // Text: Bottom center, with padding - Moved higher
-            const textFontSize = videoFeed.videoHeight * 0.06; // 6% of video height
-            const textPaddingY = videoFeed.videoHeight * 0.15; // Increased padding to move text higher
+            // Text: Bottom center, with padding - Moved higher and larger font
+            const textFontSize = videoFeed.videoHeight * 0.08; // Increased to 8% of video height
+            const textPaddingY = videoFeed.videoHeight * 0.20; // Increased padding to move text higher
             filterText.setAttribute('x', videoFeed.videoWidth / 2);
             filterText.setAttribute('y', videoFeed.videoHeight - textPaddingY);
             filterText.setAttribute('font-size', textFontSize);
-            filterText.setAttribute('stroke-width', textFontSize * 0.03); // Stroke relative to font size
+            filterText.setAttribute('stroke-width', textFontSize * 0.04); // Stroke relative to font size
 
 
             // Draw SVG filter if active
