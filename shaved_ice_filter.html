@@ -171,7 +171,7 @@
                 <!-- Text Overlay - Positioned and sized relative to dynamic viewBox -->
                 <!-- x, y, font-size, stroke-width will be set dynamically in JS based on video dimensions -->
                 <text id="filterText" x="0" y="0" font-family="Arial, sans-serif" fill="#FF69B4" text-anchor="middle" font-weight="bold" stroke="#000" stroke-width="0">
-                    Welcome to the Ice Barn Brownsburg, IN!
+                    Welcome to The Ice Barn Brownsburg, IN!
                 </text>
             </svg>
         </div>
@@ -311,10 +311,10 @@
 
             // Position and size logo and text dynamically within the new viewBox
             // Logo: Top right, with padding
-            const logoWidth = videoFeed.videoWidth * 0.90; // Set to 90% of video width as requested
+            const logoWidth = videoFeed.videoWidth * 0.75; // Set to 75% of video width as requested
             const logoHeight = logoWidth * (125 / 300); // Maintain logo aspect ratio (from original 300x125)
-            const logoPaddingX = videoFeed.videoWidth * 0.05; // 5% padding from each side
-            const logoPaddingY = videoFeed.videoHeight * 0.03; // 3% padding from top
+            const logoPaddingX = videoFeed.videoWidth * 0.003; // 0.3% padding from each side
+            const logoPaddingY = videoFeed.videoHeight * 0.003; // 0.3% padding from top
             logoImage.setAttribute('x', logoPaddingX); // Position from left to accommodate 90% width
             logoImage.setAttribute('y', logoPaddingY);
             logoImage.setAttribute('width', logoWidth);
@@ -377,9 +377,9 @@
                 shavedIceFilter.classList.add('active'); // Show the filter
                 captureBtn.style.display = 'block'; // Show capture button
                 // Update filter text with detected location name
-                filterText.textContent = `Welcome to the Ice Barn Brownsburg, IN!`; // Fixed text content
+                filterText.textContent = `Welcome to The Ice Barn Brownsburg, IN!`; // Capitalized "The"
                 // Text color is now set in CSS for fill property of the text element
-                showMessage(`Welcome to the Ice Barn Brownsburg, IN! Filter activated. Take a fun photo!`, false);
+                showMessage(`Welcome to The Ice Barn Brownsburg, IN! Filter activated. Take a fun photo!`, false);
             } else {
                 shavedIceFilter.classList.remove('active'); // Hide the filter
                 captureBtn.style.display = 'none'; // Hide capture button
