@@ -311,18 +311,18 @@
 
             // Position and size logo and text dynamically within the new viewBox
             // Logo: Top right, with padding
-            const logoWidth = videoFeed.videoWidth * 0.35; // Increased to 35% of video width
+            const logoWidth = videoFeed.videoWidth * 0.40; // Increased to 40% of video width
             const logoHeight = logoWidth * (125 / 300); // Maintain logo aspect ratio (from original 300x125)
-            const logoPaddingX = videoFeed.videoWidth * 0.04; // 4% padding from right
-            const logoPaddingY = videoFeed.videoHeight * 0.04; // 4% padding from top
+            const logoPaddingX = videoFeed.videoWidth * 0.05; // 5% padding from right
+            const logoPaddingY = videoFeed.videoHeight * 0.05; // 5% padding from top
             logoImage.setAttribute('x', videoFeed.videoWidth - logoWidth - logoPaddingX);
             logoImage.setAttribute('y', logoPaddingY);
             logoImage.setAttribute('width', logoWidth);
             logoImage.setAttribute('height', logoHeight);
 
             // Text: Bottom center, with padding - Moved higher and larger font
-            const textFontSize = videoFeed.videoHeight * 0.07; // Increased to 7% of video height
-            const textPaddingY = videoFeed.videoHeight * 0.18; // Adjusted padding to move text higher
+            const textFontSize = videoFeed.videoHeight * 0.09; // Increased to 9% of video height
+            const textPaddingY = videoFeed.videoHeight * 0.22; // Adjusted padding to move text higher
             filterText.setAttribute('x', videoFeed.videoWidth / 2);
             filterText.setAttribute('y', videoFeed.videoHeight - textPaddingY);
             filterText.setAttribute('font-size', textFontSize);
