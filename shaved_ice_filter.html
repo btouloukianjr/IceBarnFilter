@@ -315,14 +315,14 @@
             const logoHeight = logoWidth * (125 / 300); // Maintain logo aspect ratio (from original 300x125)
             const logoPaddingX = videoFeed.videoWidth * 0.003; // 0.3% padding from each side
             const logoPaddingY = videoFeed.videoHeight * 0.003; // 0.3% padding from top
-            logoImage.setAttribute('x', logoPaddingX); // Position from left to accommodate 90% width
+            logoImage.setAttribute('x', videoFeed.videoWidth - logoWidth - logoPaddingX); // Position from right
             logoImage.setAttribute('y', logoPaddingY);
             logoImage.setAttribute('width', logoWidth);
             logoImage.setAttribute('height', logoHeight);
 
             // Text: Bottom center, with padding - Adjusted for better fit
             const textFontSize = videoFeed.videoWidth * 0.05; // Adjusted font size to fit horizontally
-            const textPaddingY = videoFeed.videoHeight * 0.25; // Moved higher to avoid buttons
+            const textPaddingY = videoFeed.videoHeight * 0.28; // Moved higher to avoid buttons
             filterText.setAttribute('x', videoFeed.videoWidth / 2);
             filterText.setAttribute('y', videoFeed.videoHeight - textPaddingY);
             filterText.setAttribute('font-size', textFontSize);
@@ -458,8 +458,7 @@
                 await new Promise(resolve => {
                     img.onload = () => {
                         finalContext.drawImage(img, 0, 0, finalCanvas.width, finalCanvas.height);
-                        URL.revokeObjectURL(url);
-                        resolve();
+                        setTimeout(resolve, 50); // Add a small delay to ensure rendering
                     };
                     img.src = url;
                 });
