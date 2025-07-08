@@ -72,7 +72,7 @@
         }
         .message-box {
             position: absolute;
-            bottom: 80px;
+            bottom: 160px; /* Adjusted from 80px to 160px to move above the capture button */
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.95);
@@ -94,7 +94,7 @@
         }
         .action-buttons {
             position: absolute;
-            bottom: 80px; /* Changed from 10px to 80px */
+            bottom: 80px;
             display: flex;
             justify-content: center;
             gap: 10px;
@@ -183,8 +183,9 @@
 
         // Define your business locations
         const businessLocations = [
-            { name: "Main Street Shaved Ice", latitude: 39.8329, longitude: -86.3687 },
-            { name: "Test Location Shaved Ice", latitude: 39.8456, longitude: -86.4226 }
+            { name: "Main Street Shaved Ice", latitude: 39.8329, longitude: -86.3687 }, // Brownsburg, IN - Main Street
+            { name: "Test Location Shaved Ice", latitude: 39.8456, longitude: -86.4226 }, // Test Location
+            { name: "Indy Tower Ice Barn", latitude: 39.7689, longitude: -86.1571 } // Indy Tower location
         ];
         const detectionRadiusKm = 0.5; // 500 meters
 
